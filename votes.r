@@ -1,4 +1,4 @@
-setwd("f:/votes/")
+setwd("f:/votes2015/")
 x=read.delim2("expc.txt",stringsAsFactors = F) # c=7 , b =6
 colnames(x)[2:3]=c("cityID","PollingStationID");
 cityPoll=read.table("cityPoll.txt",stringsAsFactors = F);
@@ -11,6 +11,7 @@ farDD=rep(0,nrow(xx));
 for (i in (1:nrow(xx))){
   farDD[i]=dist(rbind(xx[i,],farDist[i,]))
 }
+#finding all polls with dist that is abnormal
 weird=order(farDD,decreasing = T)[1:20];
 png(filename = "weird.png",width = 2500,height = 2500)
 par(mfrow=c(cenNum/2,4))
@@ -29,6 +30,15 @@ for (i in (weird)){
   pie(xx[i,],col=(rainbow(ncol(xx))),main=paste(x[i, 2],x[i, 3],sep="-"))
 }
 dev.off();
+
+#Pearson's chi-squared test of all poolis in the same location
+temp=by(x,x$PollingStationName,function(x){
+  mat=as.matrix(x[,-c(1:7,ncol(x))]);
+  mat=mat[,(colSums(mat)>0)]
+  return(chisq.test(mat,simulate.p.value = T)$p.value)
+})
+p.adjust(as.numeric(unlist(temp)),method="BH")
+
 
 
 
